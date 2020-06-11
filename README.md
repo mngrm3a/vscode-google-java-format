@@ -1,4 +1,4 @@
-# vscode-google-java-format
+# Google Java Format for Visual Studio Code
 
 [google-java-format](https://github.com/google/google-java-format) extension for
 Visual Studio Code.
