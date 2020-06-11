@@ -4,13 +4,11 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
+			"type": "shell",
+			"label": "Build",
+			"command": "nix-shell --run 'yarn vscode:prepublish'",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
-			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
