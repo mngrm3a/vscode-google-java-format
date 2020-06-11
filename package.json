@@ -1,7 +1,7 @@
 {
 	"name": "vscode-google-java-formatter",
-	"displayName": "VSCode Google Java Formatter",
-	"description": "VSCode Google Java Formatter",
+	"displayName": "Google Java Format",
+	"description": "Google Java Format",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.45.0"
