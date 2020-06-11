@@ -10,14 +10,28 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:vscode-google-java-formatter.helloWorld"
+		"onLanguage:java"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
+		"configuration": [
 			{
-				"command": "vscode-google-java-formatter.helloWorld",
-                "title": "Hello World"
+				"title": "Google Java Format",
+				"properties": {
+					"gjf.jarPath": {
+						"title": "Fat Jar Path",
+						"type": "string",
+						"markdownDescription": "[google-java-format-<version>-all-deps.jar](https://github.com/google/google-java-format/releases) path"
+					}
+				}
+			}
+		],
+		"languages": [
+			{
+				"id": "java",
+				"extensions": [
+					"java"
+				]
 			}
 		]
 	},
