@@ -6,7 +6,7 @@
 		"url": "https://gitlab.com/mngrm3a/vscode-google-java-format"
 	},
 	"publisher": "mngrm3a",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.45.0"
 	},
