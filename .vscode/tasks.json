@@ -6,13 +6,24 @@
 		{
 			"type": "shell",
 			"label": "Build",
-			"command": "nix-shell --run 'yarn vscode:prepublish'",
+			"command": "nix-shell --command 'yarn vscode:prepublish'",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			}
+			},
+		},
+		{
+			"type": "shell",
+			"label": "Package",
+			"command": "nix-shell --command 'vsce package'",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"group": "build",
+			"dependsOn": [
+				"Build"
+			]
 		}
 	]
 }
