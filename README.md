@@ -6,8 +6,6 @@
 
 ## Requirements
 
-mngrm3a.vscode-google-java-formatter
-
 * working Java installation
 * local copy of [google-java-format-\<version\>-all-deps.jar](https://github.com/google/google-java-format/releases)
 
@@ -16,7 +14,3 @@ mngrm3a.vscode-google-java-formatter
 This extension contributes the following settings:
 
 * `gjf.jarPath`: path to [google-java-format-\<version\>-all-deps.jar](https://github.com/google/google-java-format/releases)
-
-## Known Issues
-
-* Formatting of text sections only works for complete expressions
