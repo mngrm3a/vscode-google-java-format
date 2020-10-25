@@ -22,10 +22,10 @@
 			{
 				"title": "Google Java Format",
 				"properties": {
-					"gjf.jarPath": {
-						"title": "Fat Jar Path",
+					"gjf.jar": {
+						"title": "Formatter Fat JAR URI",
 						"type": "string",
-						"markdownDescription": "[google-java-format-<version>-all-deps.jar](https://github.com/google/google-java-format/releases) path"
+						"markdownDescription": "Formatter [Fat JAR](https://github.com/google/google-java-format/releases) URI"
 					}
 				}
 			}
