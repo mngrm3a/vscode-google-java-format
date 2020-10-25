@@ -2,8 +2,8 @@ name: Deploy Extension
 
 on:
   push:
-    branches: 
-      - master
+    tags:
+      - v*
     paths-ignore:
       - '.vscode/**'
 
