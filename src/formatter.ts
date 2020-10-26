@@ -1,84 +1,90 @@
 import * as vscode from 'vscode';
-import { execSync } from 'child_process';
-import { url } from 'inspector';
+import * as child_process from 'child_process';
 
-type Supplier<T> = () => T | undefined;
-
-export function registerDocumentFormattingEditProvider(uriSupplier: Supplier<vscode.Uri>) {
-  return vscode.languages.registerDocumentFormattingEditProvider(
-    { scheme: 'file', language: 'java' },
-    new DocumentFormatter(uriSupplier)
-  );
-}
+type JarPathSupplier = () => vscode.Uri | undefined;
+type FixJarPathAction = () => Promise<void> | void;
 
 abstract class AbstractFormatter {
-  private uriSupplier: Supplier<vscode.Uri>;
-
-  constructor(uriSupplier: Supplier<vscode.Uri>) {
-    this.uriSupplier = uriSupplier;
+  private channel: vscode.OutputChannel;
+  private jarPathSupplier: JarPathSupplier;
+  private fixJarPathAction: FixJarPathAction;
+  constructor(channel: vscode.OutputChannel,
+    jarPathSupplier: JarPathSupplier,
+    fixJarPathAction: FixJarPathAction) {
+    this.channel = channel;
+    this.jarPathSupplier = jarPathSupplier;
+    this.fixJarPathAction = fixJarPathAction;
   }
 
-  private getJarUri(): vscode.Uri | undefined {
-    const uri = this.uriSupplier();
+  protected async formatDocumentRange(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    options: vscode.FormattingOptions,
+    token: vscode.CancellationToken):
+    Promise<vscode.TextEdit[]> {
+    const jarPath = this.jarPathSupplier();
 
-    if (uri === undefined) {
-      return undefined;
-    } else {
-      try {
-        vscode.workspace.fs.stat(uri);
-      } catch (exception) {
-        if (exception instanceof vscode.FileSystemError) {
-          return undefined;
-        }
-        throw exception;
+    try {
+      if (jarPath === undefined) {
+        throw vscode.FileSystemError.FileNotFound('Jar Path is undefined');
       }
-      return uri;
+      await vscode.workspace.fs.stat(jarPath);
+
+      const stdout = await runJarFile(jarPath.fsPath, document.getText(range));
+
+      return [vscode.TextEdit.replace(range, stdout)];
+    } catch (error) {
+      this.handleError(document.fileName, error);
+      return [];
     }
   }
 
-  private run(jarUri: vscode.Uri, stdin: string): Promise<string> {
-    return new Promise((resolve) => {
-      const stdout = execSync(
-        `java -jar ${jarUri} -`,
-        {
-          input: stdin,
-          windowsHide: true
-        })
-        .toString();
+  private async handleError(fileName: string, error: any): Promise<void> {
+    this.logErrorToChannel(fileName, error);
 
-      resolve(stdout);
-    });
+    if (error instanceof vscode.FileSystemError) {
+      const messageItem = await vscode.window.showErrorMessage(
+        'Could not find Google Java Formatter Jar file',
+        'Set Jar Path');
+      if (messageItem !== undefined) {
+        this.fixJarPathAction();
+      }
+    }
   }
 
-  protected format(document: vscode.TextDocument,
-    range: vscode.Range,
-    options: vscode.FormattingOptions,
-    token: vscode.CancellationToken): Promise<vscode.TextEdit[]> {
-    return new Promise((resolve, reject) => {
-      token.onCancellationRequested(e => reject(e));
-
-      if (range.isEmpty) {
-        resolve([]);
-      }
-
-      const jarUri = this.getJarUri();
-      if (jarUri === undefined) {
-        reject(new Error('Formatter uri not set or invalid'));
-      } else {
-        this.run(jarUri, document.getText(range))
-          .then(s => resolve([vscode.TextEdit.replace(range, s)]))
-          .catch(e => reject(e));
-      }
-    });
+  private logErrorToChannel(fileName: string, error: any): void {
+    this.channel.appendLine(`Formatting of '${fileName}' failed with:`);
+    if (error instanceof Error && error.stack) {
+      this.channel.appendLine(error.stack);
+    } else {
+      this.channel.appendLine(error);
+    }
   }
+
 }
 
-class DocumentFormatter extends AbstractFormatter implements vscode.DocumentFormattingEditProvider {
+export class DocumentFormatter extends AbstractFormatter implements
+  vscode.DocumentRangeFormattingEditProvider,
+  vscode.DocumentFormattingEditProvider {
+  provideDocumentRangeFormattingEdits(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    options: vscode.FormattingOptions,
+    token: vscode.CancellationToken):
+    vscode.ProviderResult<vscode.TextEdit[]> {
+    return this.formatDocumentRange(
+      document,
+      range,
+      options,
+      token);
+  }
+
   provideDocumentFormattingEdits(
     document: vscode.TextDocument,
     options: vscode.FormattingOptions,
-    token: vscode.CancellationToken): vscode.ProviderResult<vscode.TextEdit[]> {
-    return this.format(
+    token: vscode.CancellationToken):
+    vscode.ProviderResult<vscode.TextEdit[]> {
+    return this.formatDocumentRange(
       document,
       new vscode.Range(
         document.lineAt(0).range.start,
@@ -86,5 +92,16 @@ class DocumentFormatter extends AbstractFormatter implements vscode.DocumentForm
       ),
       options,
       token);
+
   }
+}
+
+async function runJarFile(path: string, stdin: string): Promise<string> {
+  const command = `java -jar ${path} -`;
+  const options = {
+    input: stdin,
+    windowsHide: true
+  };
+
+  return child_process.execSync(command, options).toString();
 }
