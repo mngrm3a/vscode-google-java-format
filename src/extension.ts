@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import { DocumentFormatter } from './formatter';
+import { Context, SettingsId } from "./context";
 
 export function activate(context: vscode.ExtensionContext) {
-	const channel = vscode.window.createOutputChannel('Google Java Formatter');
+	const localContext = new Context(context);
 
 	let formatter = vscode.languages.registerDocumentFormattingEditProvider(
 		{ scheme: 'file', language: 'java' },
-		new DocumentFormatter(channel, getJarPath, openJarPathSetting)
+		new DocumentFormatter(localContext, jarNotFoundAction)
 	);
 
 	context.subscriptions.push(
@@ -15,14 +16,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() { }
 
-function getJarPath(): vscode.Uri | undefined {
-	const jarPath: string | undefined = vscode.workspace.getConfiguration('gjf').get('jarPath');
-
-	return jarPath !== undefined ?
-		vscode.Uri.file(jarPath) :
-		undefined;
-}
-
-async function openJarPathSetting(): Promise<void> {
-	return vscode.commands.executeCommand('workbench.action.openSettings', 'gjf.jarPath');
+async function jarNotFoundAction() {
+	const answer = await vscode.window.showErrorMessage(
+		'Could not find Google Java Formatter Jar file',
+		'Set Jar Path'
+	);
+	if (answer) {
+		vscode.commands.executeCommand(
+			'workbench.action.openSettings',
+			SettingsId.JarPath);
+	}
 }
