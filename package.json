@@ -30,6 +30,13 @@
 				}
 			}
 		],
+		"commands": [
+			{
+				"category": "Google Java Formatter",
+				"title": "Configure JAR",
+				"command": "gjf.configureJarPath"
+			}
+		],
 		"languages": [
 			{
 				"id": "java",

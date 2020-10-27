@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { configureJarPathCommand } from './configurator';
 import { DocumentFormatter } from './formatter';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -9,7 +10,12 @@ export function activate(context: vscode.ExtensionContext) {
 		new DocumentFormatter(channel, getJarPath, openJarPathSetting)
 	);
 
+	let configurator = vscode.commands.registerCommand(
+		'gjf.configureJarPath',
+		configureJarPathCommand(context.globalStorageUri));
+
 	context.subscriptions.push(
+		configurator,
 		formatter);
 }
 
