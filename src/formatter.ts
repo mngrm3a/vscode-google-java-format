@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
-import { Context } from "./context";
-
-type Action = () => Promise<void> | void;
+import { Context, Action } from "./context";
 
 export class DocumentFormatter implements
   vscode.DocumentRangeFormattingEditProvider,

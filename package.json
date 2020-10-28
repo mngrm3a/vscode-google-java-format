@@ -37,6 +37,12 @@
 					"java"
 				]
 			}
+		],
+		"commands": [
+			{
+				"title": "Set JAR Path",
+				"command": "gjf.setJarPath"
+			}
 		]
 	},
 	"scripts": {
